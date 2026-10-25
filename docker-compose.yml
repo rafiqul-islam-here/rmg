@@ -1,0 +1,52 @@
+services:
+  web:
+    build:
+      context: .
+      target: runner
+      args:
+        # Leave empty to use the built-in mock API.
+        # Set to the NestJS API URL (as seen from the browser) when it is ready.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
+    image: threadflow-web:latest
+    container_name: threadflow-web
+    # Small init process as PID 1: forwards SIGTERM to Node (fast, clean `docker compose stop`)
+    # and reaps child processes.
+    init: true
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/login"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+      start_interval: 2s
+
+  # ---- Tests (only with: docker compose --profile test …) ----
+
+  # Lint + typecheck + unit/API/component tests. Runs during the image build; the build fails if a test fails.
+  unit:
+    profiles: ["test"]
+    build:
+      context: .
+      target: test
+    image: threadflow-web:test
+    command: ["echo", "Lint, typecheck and unit tests passed during the image build."]
+
+  # Playwright browser tests against the running `web` container.
+  e2e:
+    profiles: ["test"]
+    build:
+      context: .
+      target: e2e
+    image: threadflow-web:e2e
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      E2E_BASE_URL: http://web:3000
+    ipc: host
+    volumes:
+      - ./playwright-report:/e2e/playwright-report
+      - ./test-results:/e2e/test-results

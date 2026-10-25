@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * ThreadFlow design tokens — values come from "ThreadFlow — Simple UI Guideline" §3 / §10.1.
+ * Light theme only in v1 (dark mode is out of scope).
+ */
+:root {
+  --primary: #1457d9;
+  --primary-hover: #0f47b5;
+  --primary-soft: #eaf2ff;
+  --navy: #0b1f3a;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --surface: #ffffff;
+  --background: #f6f8fb;
+  --success: #16a36a;
+  --warning: #f59e0b;
+  --danger: #dc4545;
+
+  /* status: text / background */
+  --st-pending: #475569;
+  --st-pending-bg: #f1f5f9;
+  --st-ready: #0e7490;
+  --st-ready-bg: #e0f7fa;
+  --st-progress: #1457d9;
+  --st-progress-bg: #eaf2ff;
+  --st-hold: #b45309;
+  --st-hold-bg: #fef3c7;
+  --st-blocked: #b42323;
+  --st-blocked-bg: #fdecec;
+  --st-rework: #7c3aed;
+  --st-rework-bg: #f3e8ff;
+  --st-done: #0f7a4f;
+  --st-done-bg: #e7f6ef;
+
+  /* shadcn/ui semantic aliases */
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: var(--text);
+  --muted: #f1f5f9;
+  --muted-foreground: var(--text-muted);
+  --accent: #f6f8fb;
+  --accent-foreground: var(--text);
+  --destructive: var(--danger);
+  --input: #cbd5e1;
+  --ring: var(--primary);
+  --radius: 0.75rem;
+}
+
+@theme {
+  /* desktop starts at 1200px (UI guideline §4.3) */
+  --breakpoint-xl: 75rem;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), var(--font-bangla), system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-navy: var(--navy);
+  --color-ink: var(--text);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-st-pending: var(--st-pending);
+  --color-st-pending-bg: var(--st-pending-bg);
+  --color-st-ready: var(--st-ready);
+  --color-st-ready-bg: var(--st-ready-bg);
+  --color-st-progress: var(--st-progress);
+  --color-st-progress-bg: var(--st-progress-bg);
+  --color-st-hold: var(--st-hold);
+  --color-st-hold-bg: var(--st-hold-bg);
+  --color-st-blocked: var(--st-blocked);
+  --color-st-blocked-bg: var(--st-blocked-bg);
+  --color-st-rework: var(--st-rework);
+  --color-st-rework-bg: var(--st-rework-bg);
+  --color-st-done: var(--st-done);
+  --color-st-done-bg: var(--st-done-bg);
+
+  /* radius: 6 inputs/buttons, 8 small panels, 12 cards/modals */
+  --radius-sm: 6px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --shadow-pop: 0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  @media (min-width: 768px) {
+    body {
+      font-size: 14px;
+      line-height: 22px;
+    }
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

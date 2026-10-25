@@ -1,0 +1,381 @@
+
+[1m== 1. Compose file ==[0m
+  [32m✔[0m docker compose config is valid
+
+[1m== 2. Lint, typecheck and unit tests inside Docker (target: test) ==[0m
+#0 building with "default" instance using docker driver
+
+#1 [unit internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.00kB 0.1s done
+#1 DONE 0.1s
+
+#2 [unit internal] load metadata for docker.io/library/node:22-alpine
+#2 DONE 2.0s
+
+#3 [unit internal] load .dockerignore
+#3 transferring context: 328B 0.1s done
+#3 DONE 0.1s
+
+#4 [unit deps 1/5] FROM docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+#4 DONE 0.0s
+
+#5 [unit internal] load build context
+#5 transferring context: 833.94kB 0.9s done
+#5 DONE 0.9s
+
+#6 [unit deps 2/5] WORKDIR /app
+#6 CACHED
+
+#7 [unit deps 3/5] RUN apk add --no-cache libc6-compat
+#7 CACHED
+
+#8 [unit deps 4/5] COPY package.json package-lock.json ./
+#8 CACHED
+
+#9 [unit deps 5/5] RUN npm ci
+#9 CACHED
+
+#10 [unit test 1/2] COPY . .
+#10 DONE 0.1s
+
+#11 [unit test 2/2] RUN npm run lint && npm run typecheck && npm test
+#11 0.866 
+#11 0.866 > threadflow-web@0.1.0 lint
+#11 0.866 > eslint .
+#11 0.866 
+#11 16.40 
+#11 16.40 > threadflow-web@0.1.0 typecheck
+#11 16.40 > tsc --noEmit
+#11 16.40 
+#11 30.42 
+#11 30.42 > threadflow-web@0.1.0 test
+#11 30.42 > vitest run
+#11 30.42 
+#11 31.22 
+#11 31.22 [1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/app[39m
+#11 31.22 
+#11 32.93  [32m✓[39m tests/unit/format.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+#11 32.97  [32m✓[39m tests/unit/stages.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+#11 33.00  [32m✓[39m tests/unit/engine.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+#11 33.28  [32m✓[39m tests/unit/permissions.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+#11 33.65  [32m✓[39m tests/unit/api.test.ts [2m([22m[2m33 tests[22m[2m)[22m[33m 388[2mms[22m[39m
+#11 36.59  [32m✓[39m tests/unit/components.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 1039[2mms[22m[39m
+#11 36.59    [32m✓[39m FilterBar [2m(1)[22m
+#11 36.59      [33m[2m✓[22m[39m shows active filters as removable chips and clears everything[33m 319[2mms[22m[39m
+#11 36.60 
+#11 36.60 [2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+#11 36.60 [2m      Tests [22m [1m[32m126 passed[39m[22m[90m (126)[39m
+#11 36.60 [2m   Start at [22m 18:30:26
+#11 36.60 [2m   Duration [22m 5.37s[2m (setup 26%, transform 23%, environment 20%, import 17%, tests 14%, worker 1%)[22m
+#11 36.61 
+#11 DONE 36.8s
+
+#12 [unit] exporting to image
+#12 exporting layers
+#12 exporting layers 0.6s done
+#12 writing image sha256:6b7d7ac786a50ed94e62ff83bc34ada3f12e30aabb18c1bbb0237c986699fbc6 done
+#12 naming to docker.io/library/threadflow-web:test 0.0s done
+#12 DONE 0.6s
+  [32m✔[0m lint + typecheck + unit/API/component tests passed in the test image
+
+[1m== 3. Production image (target: runner) ==[0m
+#0 building with "default" instance using docker driver
+
+#1 [web internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.00kB 0.1s done
+#1 DONE 0.1s
+
+#2 [web internal] load metadata for docker.io/library/node:22-alpine
+#2 DONE 0.9s
+
+#3 [web internal] load .dockerignore
+#3 transferring context: 328B 0.1s done
+#3 DONE 0.1s
+
+#4 [web deps 1/5] FROM docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+#4 DONE 0.0s
+
+#5 [web internal] load build context
+#5 transferring context: 7.51kB 1.1s done
+#5 DONE 1.1s
+
+#6 [web deps 5/5] RUN npm ci
+#6 CACHED
+
+#7 [web deps 2/5] WORKDIR /app
+#7 CACHED
+
+#8 [web deps 3/5] RUN apk add --no-cache libc6-compat
+#8 CACHED
+
+#9 [web deps 4/5] COPY package.json package-lock.json ./
+#9 CACHED
+
+#10 [web build 3/5] COPY --from=deps /app/node_modules ./node_modules
+#10 CACHED
+
+#11 [web build 4/5] COPY . .
+#11 DONE 0.1s
+
+#12 [web build 5/5] RUN npm run build
+#12 0.967 
+#12 0.967 > threadflow-web@0.1.0 build
+#12 0.967 > next build
+#12 0.967 
+#12 1.830 ▲ Next.js 16.4.2 (Turbopack)
+#12 2.022 ✓ Running next.config.ts took 190ms
+#12 2.040 
+#12 2.091   Creating an optimized production build ...
+#12 13.26 ✓ Compiled successfully in 11.2s
+#12 13.27   Running TypeScript ...
+#12 28.02   Finished TypeScript in 15.3s ...
+#12 28.03   Collecting page data using 7 workers ...
+#12 29.90   Generating static pages using 7 workers (0/12) ...
+#12 30.23   Generating static pages using 7 workers (3/12) 
+#12 30.36   Generating static pages using 7 workers (6/12) 
+#12 30.59   Generating static pages using 7 workers (9/12) 
+#12 30.62 ✓ Generating static pages using 7 workers (12/12) in 720ms
+#12 30.64   Finalizing page optimization ...
+#12 31.15 
+#12 31.16 Route (app)
+#12 31.16 ┌ ƒ /
+#12 31.16 ├ ƒ /_not-found
+#12 31.16 ├ ƒ /api/mock/[...path]
+#12 31.16 ├ ƒ /dashboard
+#12 31.16 ├ ƒ /departments
+#12 31.16 ├ ƒ /departments/[stage]
+#12 31.16 ├ ○ /icon.png
+#12 31.16 ├ ƒ /login
+#12 31.16 ├ ƒ /my-work
+#12 31.16 ├ ƒ /orders
+#12 31.16 ├ ƒ /orders/[id]
+#12 31.16 ├ ƒ /orders/new
+#12 31.16 ├ ƒ /reports
+#12 31.16 └ ƒ /settings
+#12 31.16 
+#12 31.16 
+#12 31.16 ƒ Proxy (Middleware)
+#12 31.16 
+#12 31.16 ○  (Static)   prerendered as static content
+#12 31.16 ƒ  (Dynamic)  server-rendered on demand
+#12 31.16 
+#12 31.26 npm notice
+#12 31.26 npm notice New major version of npm available! 10.9.9 -> 12.2.1
+#12 31.26 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#12 31.26 npm notice To update run: npm install -g npm@12.2.1
+#12 31.26 npm notice
+#12 DONE 31.4s
+
+#13 [web runner 3/6] RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
+#13 CACHED
+
+#14 [web runner 4/6] COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
+#14 DONE 0.6s
+
+#15 [web runner 5/6] COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
+#15 DONE 0.1s
+
+#16 [web runner 6/6] COPY --from=build --chown=nextjs:nodejs /app/public ./public
+#16 DONE 0.1s
+
+#17 [web] exporting to image
+#17 exporting layers
+#17 exporting layers 0.8s done
+#17 writing image sha256:9e4a2b5cbaa4404dc2db437250cfb53bfc255a88bfb400fe815bad0dda6e84a0 done
+#17 naming to docker.io/library/threadflow-web:latest done
+#17 DONE 0.8s
+  image size: 227 MB
+  [32m✔[0m image is under 400 MB
+  [32m✔[0m runs as non-root user (nextjs)
+  [32m✔[0m no source, tests or dev tools inside the production image
+
+[1m== 4. docker compose up ==[0m
+ Network code_default  Creating
+ Network code_default  Created
+ Container threadflow-web  Creating
+ Container threadflow-web  Created
+ Container threadflow-web  Starting
+ Container threadflow-web  Started
+  [32m✔[0m container is healthy
+  [32m✔[0m GET /login → 200
+  [32m✔[0m signed-out /orders → 307 redirect to login
+  [32m✔[0m static brand image served
+  [32m✔[0m API without session → 401
+  [32m✔[0m login with company + username + password → 200
+  [32m✔[0m dashboard with session → 200
+  [32m✔[0m wrong company → 401
+
+[1m== 5. Browser tests in Docker (target: e2e, Playwright Chromium → http://web:3000) ==[0m
+ Container threadflow-web  Running
+
+Running 64 tests using 1 worker
+
+  ✓   1 [desktop] › tests/e2e/auth.spec.ts:5:7 › Login: Company name → Username or ID → Password › signed-out visitors are sent to the login page; fields are in the right order (864ms)
+  ✓   2 [desktop] › tests/e2e/auth.spec.ts:14:7 › Login: Company name → Username or ID → Password › shows errors next to each field and keeps what was typed (2.5s)
+  ✓   3 [desktop] › tests/e2e/auth.spec.ts:31:7 › Login: Company name → Username or ID → Password › password is hidden until Show password (909ms)
+  ✓   4 [desktop] › tests/e2e/auth.spec.ts:38:7 › Login: Company name → Username or ID → Password › a supervisor signs in with a username and lands on My Work (2.1s)
+  ✓   5 [desktop] › tests/e2e/auth.spec.ts:44:7 › Login: Company name → Username or ID → Password › an employee ID works instead of the username, and the company is remembered (2.0s)
+  ✓   6 [desktop] › tests/e2e/auth.spec.ts:52:7 › Login: Company name → Username or ID → Password › quick demo boxes are Merchandiser, Manager and Supervisor — no Worker (1.9s)
+  ✓   7 [desktop] › tests/e2e/auth.spec.ts:62:7 › Login: Company name → Username or ID → Password › sign out returns to login (3.4s)
+  ✓   8 [desktop] › tests/e2e/auth.spec.ts:72:7 › company name is shown in the app › sidebar, top bar and account menu (2.0s)
+  ✓   9 [desktop] › tests/e2e/auth.spec.ts:81:7 › company name is shown in the app › mobile menu (2.2s)
+  ✓  10 [desktop] › tests/e2e/auth.spec.ts:91:7 › roles › a supervisor cannot open Dashboard, Reports or Settings (4.0s)
+  ✓  11 [desktop] › tests/e2e/auth.spec.ts:103:7 › roles › merchandiser and manager are super users: they see Settings (3.3s)
+  ✓  12 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /dashboard fits the screen and has at most one main (blue) button (3.3s)
+  ✓  13 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /orders fits the screen and has at most one main (blue) button (3.3s)
+  ✓  14 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /orders?view=board fits the screen and has at most one main (blue) button (2.8s)
+  ✓  15 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /orders/new?buyer=b-std fits the screen and has at most one main (blue) button (2.0s)
+  ✓  16 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /orders/o-1011 fits the screen and has at most one main (blue) button (2.2s)
+  ✓  17 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /my-work fits the screen and has at most one main (blue) button (1.8s)
+  ✓  18 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /departments/ppm fits the screen and has at most one main (blue) button (1.6s)
+  ✓  19 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /departments/sewing fits the screen and has at most one main (blue) button (1.8s)
+  ✓  20 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /departments/cutting fits the screen and has at most one main (blue) button (1.6s)
+  ✓  21 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /reports fits the screen and has at most one main (blue) button (2.6s)
+  ✓  22 [desktop] › tests/e2e/layout.spec.ts:29:11 › mobile 390px › /settings fits the screen and has at most one main (blue) button (1.8s)
+  ✓  23 [desktop] › tests/e2e/layout.spec.ts:39:9 › mobile 390px › navigation matches the breakpoint (3.1s)
+  ✓  24 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /dashboard fits the screen and has at most one main (blue) button (2.3s)
+  ✓  25 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /orders fits the screen and has at most one main (blue) button (2.7s)
+  ✓  26 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /orders?view=board fits the screen and has at most one main (blue) button (2.7s)
+  ✓  27 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /orders/new?buyer=b-std fits the screen and has at most one main (blue) button (2.1s)
+  ✓  28 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /orders/o-1011 fits the screen and has at most one main (blue) button (2.4s)
+  ✓  29 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /my-work fits the screen and has at most one main (blue) button (1.5s)
+  ✓  30 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /departments/ppm fits the screen and has at most one main (blue) button (1.4s)
+  ✓  31 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /departments/sewing fits the screen and has at most one main (blue) button (1.5s)
+  ✓  32 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /departments/cutting fits the screen and has at most one main (blue) button (1.3s)
+  ✓  33 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /reports fits the screen and has at most one main (blue) button (2.1s)
+  ✓  34 [desktop] › tests/e2e/layout.spec.ts:29:11 › tablet 834px › /settings fits the screen and has at most one main (blue) button (1.7s)
+  ✓  35 [desktop] › tests/e2e/layout.spec.ts:39:9 › tablet 834px › navigation matches the breakpoint (1.9s)
+  ✓  36 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /dashboard fits the screen and has at most one main (blue) button (2.7s)
+  ✓  37 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /orders fits the screen and has at most one main (blue) button (3.0s)
+  ✓  38 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /orders?view=board fits the screen and has at most one main (blue) button (2.6s)
+  ✓  39 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /orders/new?buyer=b-std fits the screen and has at most one main (blue) button (2.5s)
+  ✓  40 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /orders/o-1011 fits the screen and has at most one main (blue) button (2.4s)
+  ✓  41 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /my-work fits the screen and has at most one main (blue) button (1.5s)
+  ✓  42 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /departments/ppm fits the screen and has at most one main (blue) button (1.6s)
+  ✓  43 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /departments/sewing fits the screen and has at most one main (blue) button (1.8s)
+  ✓  44 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /departments/cutting fits the screen and has at most one main (blue) button (1.5s)
+  ✓  45 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /reports fits the screen and has at most one main (blue) button (2.2s)
+  ✓  46 [desktop] › tests/e2e/layout.spec.ts:29:11 › desktop 1440px › /settings fits the screen and has at most one main (blue) button (1.4s)
+  ✓  47 [desktop] › tests/e2e/layout.spec.ts:39:9 › desktop 1440px › navigation matches the breakpoint (1.6s)
+  ✓  48 [desktop] › tests/e2e/layout.spec.ts:59:5 › touch targets on the floor are at least 44px (tablet) (2.2s)
+  ✓  49 [desktop] › tests/e2e/layout.spec.ts:70:5 › every status badge shows a word and an icon (2.3s)
+  ✓  50 [desktop] › tests/e2e/pdf-flow.spec.ts:30:5 › §3 entry form: None is selected initially, two color rows, validation (3.8s)
+  ✘  51 [desktop] › tests/e2e/pdf-flow.spec.ts:51:5 › §3 → §6 Embroidery order: Fabric → Cutting → EMB to print (21.9s)
+  -  52 [desktop] › tests/e2e/pdf-flow.spec.ts:133:5 › §6 Option 1 via Ignore embellishment (merchandiser) → Sewing with a sewing unit
+  -  53 [desktop] › tests/e2e/pdf-flow.spec.ts:185:5 › §4 Option 2: Fabric not found keeps the order in Fabric with the comment
+  -  54 [desktop] › tests/e2e/pdf-flow.spec.ts:207:5 › a cutting supervisor cannot update Fabric (disabled with a reason)
+  ✓  55 [desktop] › tests/e2e/pdf-flow.spec.ts:30:5 › §3 entry form: None is selected initially, two color rows, validation (retry #1) (4.2s)
+  ✘  56 [desktop] › tests/e2e/pdf-flow.spec.ts:51:5 › §3 → §6 Embroidery order: Fabric → Cutting → EMB to print (retry #1) (21.8s)
+  -  57 [desktop] › tests/e2e/pdf-flow.spec.ts:133:5 › §6 Option 1 via Ignore embellishment (merchandiser) → Sewing with a sewing unit (retry #1)
+  -  58 [desktop] › tests/e2e/pdf-flow.spec.ts:185:5 › §4 Option 2: Fabric not found keeps the order in Fabric with the comment (retry #1)
+  -  59 [desktop] › tests/e2e/pdf-flow.spec.ts:207:5 › a cutting supervisor cannot update Fabric (disabled with a reason) (retry #1)
+  ✓  60 [desktop] › tests/e2e/states.spec.ts:10:5 › empty: Orders explains and offers the next step (2.7s)
+  ✓  61 [desktop] › tests/e2e/states.spec.ts:16:5 › empty: department queue (2.4s)
+  ✓  62 [desktop] › tests/e2e/states.spec.ts:22:5 › error: Dashboard shows a banner with Try again and no misleading content (2.3s)
+  ✓  63 [desktop] › tests/e2e/states.spec.ts:30:5 › error: Orders and My Work (3.1s)
+  ✓  64 [desktop] › tests/e2e/states.spec.ts:38:5 › loading: skeletons in the shape of the content, no spinner page (1.7s)
+  ✓  65 [desktop] › tests/e2e/states.spec.ts:45:5 › not found order (2.6s)
+  ✓  66 [desktop] › tests/e2e/states.spec.ts:50:5 › Bangla: labels switch, order codes stay in Latin (2.3s)
+  ✓  67 [desktop] › tests/e2e/users.spec.ts:6:5 › a merchandiser creates a supervisor, who then signs in with company + username + password (7.3s)
+  ✓  68 [desktop] › tests/e2e/users.spec.ts:49:5 › a manager resets a password; the old one stops working (10.7s)
+  ✓  69 [desktop] › tests/e2e/users.spec.ts:66:5 › super users can't edit their own account or (unless admin) an admin (4.5s)
+
+
+  1) [desktop] › tests/e2e/pdf-flow.spec.ts:51:5 › §3 → §6 Embroidery order: Fabric → Cutting → EMB to print 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('article').filter({ hasText: 'STD-E2E-MVLB5RD9374 [Heather Grey, Crimson Red]' })
+    Expected substring: "PP Meeting pending"
+    Received string:    "Created: 24 Oct, 2026 12:33 AMtanvir@threadflow.bdSTD-E2E-MVLB5RD9374 [Heather Grey, Crimson Red]Buyer: STADIUMFabric deliveredEmbroideryFabric Delivered time24 Oct, 2026 12:33 AM Start"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" locator('article').filter({ hasText: 'STD-E2E-MVLB5RD9374 [Heather Grey, Crimson Red]' }) with timeout 10000ms
+      - waiting for locator('article').filter({ hasText: 'STD-E2E-MVLB5RD9374 [Heather Grey, Crimson Red]' })
+        24 × locator resolved to <article class="group relative flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 transition-colors duration-150 hover:border-primary/60">…</article>
+           - unexpected value "Created: 24 Oct, 2026 12:33 AMtanvir@threadflow.bdSTD-E2E-MVLB5RD9374 [Heather Grey, Crimson Red]Buyer: STADIUMFabric deliveredEmbroideryFabric Delivered time24 Oct, 2026 12:33 AM Start"
+
+
+      86 |   await expect(cuttingCard).toContainText("Fabric Delivered time");
+      87 |   await expect(cuttingCard).toContainText("Fabric delivered");
+    > 88 |   await expect(cuttingCard).toContainText("PP Meeting pending");
+         |                             ^
+      89 |   await expect(cuttingCard.getByRole("button", { name: "Start" })).toBeDisabled();
+      90 |
+      91 |   // PP Meeting — merchandiser records the meeting: attendees, checklist, decision
+        at /e2e/tests/e2e/pdf-flow.spec.ts:88:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('article').filter({ hasText: 'STD-E2E-MVLB6GVL101 [Heather Grey, Crimson Red]' })
+    Expected substring: "PP Meeting pending"
+    Received string:    "Created: 24 Oct, 2026 12:33 AMtanvir@threadflow.bdSTD-E2E-MVLB6GVL101 [Heather Grey, Crimson Red]Buyer: STADIUMFabric deliveredEmbroideryFabric Delivered time24 Oct, 2026 12:33 AM Start"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" locator('article').filter({ hasText: 'STD-E2E-MVLB6GVL101 [Heather Grey, Crimson Red]' }) with timeout 10000ms
+      - waiting for locator('article').filter({ hasText: 'STD-E2E-MVLB6GVL101 [Heather Grey, Crimson Red]' })
+        24 × locator resolved to <article class="group relative flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 transition-colors duration-150 hover:border-primary/60">…</article>
+           - unexpected value "Created: 24 Oct, 2026 12:33 AMtanvir@threadflow.bdSTD-E2E-MVLB6GVL101 [Heather Grey, Crimson Red]Buyer: STADIUMFabric deliveredEmbroideryFabric Delivered time24 Oct, 2026 12:33 AM Start"
+
+
+      86 |   await expect(cuttingCard).toContainText("Fabric Delivered time");
+      87 |   await expect(cuttingCard).toContainText("Fabric delivered");
+    > 88 |   await expect(cuttingCard).toContainText("PP Meeting pending");
+         |                             ^
+      89 |   await expect(cuttingCard.getByRole("button", { name: "Start" })).toBeDisabled();
+      90 |
+      91 |   // PP Meeting — merchandiser records the meeting: attendees, checklist, decision
+        at /e2e/tests/e2e/pdf-flow.spec.ts:88:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop-retry1/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/pdf-flow-§3-→-§6-Embroider-432bc-ic-→-Cutting-→-EMB-to-print-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › tests/e2e/pdf-flow.spec.ts:51:5 › §3 → §6 Embroidery order: Fabric → Cutting → EMB to print 
+  3 did not run
+  60 passed (3.6m)
+  [31m✘[0m browser tests failed (report: ./playwright-report/index.html)
+
+[1m== 6. Crash recovery, restart policy and clean shutdown ==[0m
+  [32m✔[0m server process killed → container restarted and healthy again
+  [31m✘[0m restart count = 0
+  [32m✔[0m docker compose stop finished in 1s (SIGTERM handled, no 10s kill timeout)
+  [32m✔[0m started again and healthy
+
+[1m== 7. Mock data resets on restart ==[0m
+  [31m✘[0m orders after restart: 24 (expected 23)
+
+[1m== 8. Build for a real backend ==[0m
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
