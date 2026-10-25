@@ -1,0 +1,226 @@
+name: Build and Deploy to Nomad
+
+on:
+  push:
+    branches:
+      - fastapi-migration
+  workflow_dispatch:
+
+env:
+  REGISTRY_PORT: ${{ vars.REGISTRY_PORT }}
+  VPS_NETBIRD_IP: ${{ vars.VPS_NETBIRD_IP }}
+
+jobs:
+  build-push-deploy:
+    name: Build, Push and Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      # 1. Checkout
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. Install Podman
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+          podman --version
+
+      # 3. Install NetBird
+      - name: Install NetBird
+        run: |
+          curl -fsSL https://pkgs.netbird.io/install.sh | sh
+          netbird version
+
+      # 4. Connect GitHub Runner to NetBird
+      - name: Connect to NetBird
+        run: |
+          sudo netbird up --setup-key "${{ secrets.NETBIRD_SETUP_KEY }}"
+          echo "Waiting for NetBird connection..."
+
+          for i in {1..30}; do
+            STATUS=$(sudo netbird status 2>/dev/null || true)
+
+            if echo "$STATUS" | grep -qi "Connected"; then
+              echo "NetBird connected successfully."
+              break
+            fi
+
+            if [ "$i" -eq 30 ]; then
+              echo "Failed to connect to NetBird."
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          sudo netbird status
+
+      # 5. Configure Registry and Image Names
+      - name: Configure deployment
+        run: |
+          REGISTRY="${VPS_NETBIRD_IP}:${REGISTRY_PORT}"
+          COMMIT_ID="${GITHUB_SHA::7}"
+
+          echo "REGISTRY=${REGISTRY}" >> "$GITHUB_ENV"
+          echo "COMMIT_ID=${COMMIT_ID}" >> "$GITHUB_ENV"
+
+          # Mohsin Rubel Portfolio
+          echo "APP_LATEST=${REGISTRY}/mohsinrubel-portfolio:latest" >> "$GITHUB_ENV"
+          echo "APP_COMMIT=${REGISTRY}/mohsinrubel-portfolio:${COMMIT_ID}" >> "$GITHUB_ENV"
+
+          echo "Mohsin Rubel Portfolio:"
+          echo "  ${APP_LATEST}"
+          echo "  ${APP_COMMIT}"
+
+
+      # 6. Test Private Registry
+      - name: Test registry connection
+        run: |
+          echo "Testing registry..."
+          timeout 10 bash -c "cat < /dev/null > /dev/tcp/${VPS_NETBIRD_IP}/${REGISTRY_PORT}"
+          curl --fail --connect-timeout 10 "http://${REGISTRY}/v2/"
+          echo "Private registry is reachable."
+
+
+      # 7. Build Mohsin Rubel Portfolio Image
+      - name: Build Mohsin Rubel Portfolio image
+        run: |
+          podman build \
+            --build-arg EMAIL_PORT="${{vars.EMAIL_PORT}}" \
+            --build-arg EMAIL_HOST="${{vars.EMAIL_HOST}}" \
+            --build-arg INITIAL_ADMIN_EMAIL="${{vars.INITIAL_ADMIN_EMAIL}}" \
+            --build-arg EMAIL_USE_TLS="${{vars.EMAIL_USE_TLS}}" \
+            --build-arg EMAIL_HOST_PASSWORD="${{secrets.EMAIL_HOST_PASSWORD}}" \
+            --build-arg MAIL_DEFAULT_SENDER="${{vars.MAIL_DEFAULT_SENDER}}" \
+            --build-arg EMAIL_HOST_USER="${{vars.EMAIL_HOST_USER}}" \
+            --build-arg EMAIL_USE_SSL="${{vars.EMAIL_USE_SSL}}" \
+            --build-arg INITIAL_ADMIN_PASSWORD="${{vars.INITIAL_ADMIN_PASSWORD}}" \
+            --build-arg WEBSITE_HEALTHCHECK_MAXPINGFAILURES="${{vars.WEBSITE_HEALTHCHECK_MAXPINGFAILURES}}" \
+            --build-arg FLASK_APP="${{vars.FLASK_APP}}" \
+            --build-arg PORT="${{vars.PORT}}" \
+            --build-arg FLASK_ENV="${{vars.FLASK_ENV}}" \
+            --build-arg DB_PORT="${{vars.DB_PORT}}" \
+            --build-arg DB_USER="${{vars.DB_USER}}" \
+            --build-arg DB_HOST="${{vars.DB_HOST}}" \
+            --build-arg DB_NAME="${{vars.DB_NAME}}" \
+            --build-arg DB_PASSWORD="${{secrets.DB_PASSWORD}}" \
+            --build-arg SECRET_KEY="${{vars.SECRET_KEY}}" \
+            --build-arg R2_ACCESS_KEY_ID="${{vars.R2_ACCESS_KEY_ID}}" \
+            --build-arg R2_BUCKET_NAME="${{vars.R2_BUCKET_NAME}}" \
+            --build-arg R2_PUBLIC_URL="${{vars.R2_PUBLIC_URL}}" \
+            --build-arg R2_SECRET_ACCESS_KEY="${{vars.R2_SECRET_ACCESS_KEY}}" \
+            --build-arg R2_ACCOUNT_ID="${{vars.R2_ACCOUNT_ID}}" \
+            -t "$APP_LATEST" \
+            -t "$APP_COMMIT" \
+            .
+
+          echo "Mohsin Rubel Portfolio image built."
+
+
+      # 8. Push Mohsin Rubel Portfolio Images
+      - name: Push Mohsin Rubel Portfolio images
+        run: |
+          podman push --tls-verify=false "$APP_LATEST"
+          podman push --tls-verify=false "$APP_COMMIT"
+          echo "Mohsin Rubel Portfolio images pushed."
+
+      # 9. Install Nomad
+      - name: Install Nomad
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg \
+            | sudo gpg --dearmor \
+            -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+          echo \
+            "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+            https://apt.releases.hashicorp.com \
+            $(lsb_release -cs) main" \
+            | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+          sudo apt-get update
+          sudo apt-get install -y nomad
+
+          nomad version
+
+      # 10. Test Nomad Connection
+      - name: Test Nomad connection
+        env:
+          NOMAD_ADDR: http://${{ vars.VPS_NETBIRD_IP }}:4646
+        run: |
+          echo "=== Nomad Servers ==="
+          nomad server members
+
+          echo
+          echo "=== Nomad Nodes ==="
+          nomad node status
+
+
+      # 11. Deploy Nomad Job
+      - name: Deploy Nomad job
+        env:
+          NOMAD_ADDR: http://${{ vars.VPS_NETBIRD_IP }}:4646
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+        run: |
+          nomad job run \
+            -namespace="prod" \
+            -var="APP_COMMIT=${APP_COMMIT}" \
+            -var="CLOUDFLARE_TUNNEL_TOKEN=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" \
+            -var="EMAIL_PORT=${{vars.EMAIL_PORT}}" \
+            -var="EMAIL_HOST=${{vars.EMAIL_HOST}}" \
+            -var="INITIAL_ADMIN_EMAIL=${{vars.INITIAL_ADMIN_EMAIL}}" \
+            -var="EMAIL_USE_TLS=${{vars.EMAIL_USE_TLS}}" \
+            -var="EMAIL_HOST_PASSWORD=${{secrets.EMAIL_HOST_PASSWORD}}" \
+            -var="MAIL_DEFAULT_SENDER=${{vars.MAIL_DEFAULT_SENDER}}" \
+            -var="EMAIL_HOST_USER=${{vars.EMAIL_HOST_USER}}" \
+            -var="EMAIL_USE_SSL=${{vars.EMAIL_USE_SSL}}" \
+            -var="INITIAL_ADMIN_PASSWORD=${{vars.INITIAL_ADMIN_PASSWORD}}" \
+            -var="WEBSITE_HEALTHCHECK_MAXPINGFAILURES=${{vars.WEBSITE_HEALTHCHECK_MAXPINGFAILURES}}" \
+            -var="FLASK_APP=${{vars.FLASK_APP}}" \
+            -var="PORT=${{vars.PORT}}" \
+            -var="FLASK_ENV=${{vars.FLASK_ENV}}" \
+            -var="DB_PORT=${{vars.DB_PORT}}" \
+            -var="DB_USER=${{vars.DB_USER}}" \
+            -var="DB_HOST=${{vars.DB_HOST}}" \
+            -var="DB_NAME=${{vars.DB_NAME}}" \
+            -var="DB_PASSWORD=${{secrets.DB_PASSWORD}}" \
+            -var="SECRET_KEY=${{vars.SECRET_KEY}}" \
+            -var="R2_ACCESS_KEY_ID=${{vars.R2_ACCESS_KEY_ID}}" \
+            -var="R2_BUCKET_NAME=${{vars.R2_BUCKET_NAME}}" \
+            -var="R2_PUBLIC_URL=${{vars.R2_PUBLIC_URL}}" \
+            -var="R2_SECRET_ACCESS_KEY=${{vars.R2_SECRET_ACCESS_KEY}}" \
+            -var="R2_ACCOUNT_ID=${{vars.R2_ACCOUNT_ID}}" \
+            nomad/job.hcl
+
+          echo "Dev deployment submitted."
+
+
+      # 12. Verify Deployment
+      - name: Verify deployment
+        env:
+          NOMAD_ADDR: http://${{ vars.VPS_NETBIRD_IP }}:4646
+        run: |
+          echo "Waiting for allocation..."
+          sleep 10
+
+          echo "=== Job Status ==="
+          nomad job status -namespace="prod" mohsinrubel-portfolio
+
+          echo
+          echo "=== Allocations ==="
+          nomad job allocs -namespace="prod" mohsinrubel-portfolio
+
+
+      # 17. Cleanup
+      - name: Cleanup
+        if: always()
+        run: |
+          podman rmi "$APP_LATEST" 2>/dev/null || true
+          podman rmi "$APP_COMMIT" 2>/dev/null || true
+          sudo netbird down || true
+          echo "Cleanup completed."
